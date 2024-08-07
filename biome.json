@@ -10,12 +10,6 @@
 		}
 	},
 	"files": {
-		"ignore": [
-			"node_modules",
-			".next",
-			".amplify",
-			"amplify_outputs.json",
-			"components"
-		]
+		"ignore": ["node_modules", ".next", ".amplify", "amplify_outputs.json"]
 	}
 }

@@ -14,14 +14,19 @@ import {
 	SignalHigh,
 	SignalLow,
 	SignalMedium,
+	Plus,
+	Edit,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UpdateTodo } from "@/components/UpdateTodo";
 import { CreateTodo } from "@/components/CreateTodo";
 import { DeleteButton } from "@/components/DeleteTodo";
+import { useDialogStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
 
 export default async function Home() {
 	const { data: todos, errors } = await cookiesClient.models.Todo.list();
+	const { openCreateDialog, openEditDialog, addEditDetails } = useDialogStore();
 	const priority = [
 		{ value: "HIGH", index: 1, icon: SignalHigh },
 		{ value: "MEDIUM", index: 2, icon: SignalMedium },
@@ -39,12 +44,19 @@ export default async function Home() {
 	}
 
 	return (
-		<div className="flex flex-col h-screen">
+		<div className="flex flex-col h-screen items-center">
 			<h1 className="text-2xl font-bold">Everybody starts with a todo app</h1>
 			<main className="flex-1 p-6">
-				<div className="flex justify-between items-center mb-4">
+				<div className="flex justify-between items-center mb-4 gap-4">
 					<Input className="" placeholder="Search..." />
-					<CreateTodo />
+					<Button
+						variant={"outline"}
+						size={"sm"}
+						onClick={() => openCreateDialog()}
+					>
+						<Plus className="w-4 h-4 mr-2" />
+						Add todo
+					</Button>
 				</div>
 				<div className="grid gap-4">
 					{todos.length > 0 ? (
@@ -90,12 +102,20 @@ export default async function Home() {
 								</CardContent>
 								<CardFooter>
 									<div className="flex items-center justify-end gap-2">
-										<UpdateTodo
-											defaultValues={{
-												...todo,
-												priority: todo.priority || "MEDIUM",
+										<Button
+											variant={"outline"}
+											size={"sm"}
+											onClick={() => {
+												addEditDetails({
+													...todo,
+													priority: todo.priority || "MEDIUM",
+												});
+												openEditDialog();
 											}}
-										/>
+										>
+											<Edit className="w-4 h-4 mr-2" />
+											Edit todo
+										</Button>
 										<DeleteButton id={todo.id} />
 									</div>
 								</CardFooter>
@@ -122,6 +142,8 @@ export default async function Home() {
 					</span>
 				</div>
 			</footer>
+			<UpdateTodo />
+			<CreateTodo />
 		</div>
 	);
 }

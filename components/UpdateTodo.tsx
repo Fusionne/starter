@@ -7,7 +7,6 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -30,25 +29,27 @@ import { useRouter } from "next/navigation";
 import { createTodo } from "@/actions/todo";
 import { type Todo, todoSchema } from "@/types/types";
 import { toast } from "sonner";
-import { CalendarDays, Plus, Save } from "lucide-react";
-import { useState } from "react";
+import { CalendarDays, Save } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { SubmitButton } from "./submit-button";
+import { useDialogStore } from "@/lib/store";
 
-export function UpdateTodo({ defaultValues }: { defaultValues: Todo }) {
-	const [open, setOpen] = useState(false);
+export function UpdateTodo() {
+	const { editDetails, closeEditDialog, editDialog, removeEditDetails } =
+		useDialogStore();
 	const router = useRouter();
+	if (!editDetails) return null;
 	const form = useForm<Todo>({
 		resolver: zodResolver(todoSchema),
 		defaultValues: {
-			id: defaultValues.id,
-			title: defaultValues.title,
-			content: defaultValues.content,
-			priority: defaultValues.priority,
-			dueDate: defaultValues.dueDate,
+			id: editDetails.id,
+			title: editDetails.title,
+			content: editDetails.content,
+			priority: editDetails.priority,
+			dueDate: editDetails.dueDate,
 		},
 	});
 
@@ -57,23 +58,19 @@ export function UpdateTodo({ defaultValues }: { defaultValues: Todo }) {
 			const res = await createTodo(values);
 			if (res.success) {
 				toast.success("Todo created successfully");
-				setOpen(false);
+				closeEditDialog();
+				removeEditDetails();
 				router.refresh();
 			} else {
 				toast.error(res.error);
-				setOpen(false);
+				closeEditDialog();
+				removeEditDetails();
 			}
 		};
 	}
 
 	return (
-		<Dialog open={open}>
-			<DialogTrigger asChild>
-				<Button variant={"outline"} size={"sm"}>
-					<Plus className="w-4 h-4 mr-2" />
-					Edit todo
-				</Button>
-			</DialogTrigger>
+		<Dialog open={editDialog}>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>Create a Todo</DialogTitle>
@@ -93,7 +90,7 @@ export function UpdateTodo({ defaultValues }: { defaultValues: Todo }) {
 										<Input
 											placeholder="Title"
 											{...field}
-											value={defaultValues.title}
+											value={editDetails.title}
 										/>
 									</FormControl>
 									<FormMessage />

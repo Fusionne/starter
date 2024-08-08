@@ -7,7 +7,6 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -31,15 +30,15 @@ import { createTodo } from "@/actions/todo";
 import { type Todo, todoSchema } from "@/types/types";
 import { toast } from "sonner";
 import { CalendarDays, Plus } from "lucide-react";
-import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { SubmitButton } from "./submit-button";
+import { useDialogStore } from "@/lib/store";
 
 export function CreateTodo() {
-	const [open, setOpen] = useState(false);
+	const { createDialog, closeCreateDialog } = useDialogStore();
 	const router = useRouter();
 	const form = useForm<Todo>({
 		resolver: zodResolver(todoSchema),
@@ -57,23 +56,17 @@ export function CreateTodo() {
 			const res = await createTodo(values);
 			if (res.success) {
 				toast.success("Todo created successfully");
-				setOpen(false);
+				closeCreateDialog();
 				router.refresh();
 			} else {
 				toast.error(res.error);
-				setOpen(false);
+				closeCreateDialog();
 			}
 		};
 	}
 
 	return (
-		<Dialog open={open}>
-			<DialogTrigger asChild>
-				<Button variant={"outline"} size={"sm"}>
-					<Plus className="w-4 h-4 mr-2" />
-					Add todo
-				</Button>
-			</DialogTrigger>
+		<Dialog open={createDialog}>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
 					<DialogTitle>Create a Todo</DialogTitle>
